@@ -18,7 +18,6 @@ use axum::{
 	Router,
 };
 use serde::{Deserialize, Serialize};
-use sqlx::postgres::{PgPool, PgPoolOptions};
 use std::future::IntoFuture;
 use std::time::Duration;
 
