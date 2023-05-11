@@ -1,15 +1,17 @@
 use axum::Router;
 use std::net::SocketAddr;
 
-use artofus::build_main_router;
+use appcore::{build_database_pool, build_main_router};
 
 #[tokio::main]
 async fn main() {
 	// Should have the form postgres://postgres:password@host
 	let db_connection_str = std::env::var("DATABASE_URL")
 		.expect("DATABASE_URL is not set in environment.").to_string();
+
+	let db = build_database_pool(db_connection_str).await.unwrap();
 	
-	let routes: Router = build_main_router(db_connection_str).await;
+	let routes: Router = build_main_router(db).await;
 	
 	// Old-school way of doing this.  When upgrading to 0.7, switch over.
 	let address = SocketAddr::from(([127, 0, 0, 1], 8080));
