@@ -26,16 +26,16 @@ use std::time::Duration;
 
 
 const MAX_POOLED_CONNECTIONS: u32 = 5;
-
+pub type DB = Arc<sqlx::Pool<sqlx::Postgres>>;
 
 #[derive(Clone, Debug)]
 struct AppState {
 	// templates, cache, etc.
-	db_pool: Arc<sqlx::Pool<sqlx::Postgres>>,
+	db_pool: DB,
 }
 
 
-pub async fn build_database_pool(db_connection_str: String) -> AHResult<sqlx::Pool<sqlx::Postgres>> {
+pub async fn build_database_pool(db_connection_str: String) -> AHResult<DB> {
 	// setup connection pool
 	// let db: DatabaseConnection = Database::connect("protocol://username:password@host/database").await?;
 	
@@ -46,16 +46,16 @@ pub async fn build_database_pool(db_connection_str: String) -> AHResult<sqlx::Po
 		.await
 		.expect("Can't connect to database");
 	
-	Ok(pool)
+	Ok(Arc::new(pool))
 }
 
 
-pub async fn build_main_router(db_pool: sqlx::Pool<sqlx::Postgres>) -> Router {
+pub async fn build_main_router(db_pool: DB) -> Router {
 	// initialize tracing
 	//tracing_subscriber::fmt::init();
 	
 	let app_state = AppState {
-		db_pool: Arc::new(db_pool),
+		db_pool,
 	};
 	
 	let routes = Router::new()
